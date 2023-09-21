@@ -9,6 +9,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class HsWebsocketServer {
   String get newClientId => Uuid().v4();
   Map<String, HsWebsocket> _clients = {};
+  Map<String, HsWebsocket> get clients => _clients;
 
   Event2<HsWebsocket, DataPacket> onClientPacket  = Event2();
   Event1<HsWebsocket> onClientDisconnected        = Event1();
