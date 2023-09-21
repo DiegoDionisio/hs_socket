@@ -31,6 +31,9 @@ class HsWebsocket {
   Event onDisconnect  = Event();
 
   Event1<DataPacket> onPacket = Event1();
+  Event1<Map<String, dynamic>> onCommandRequest   = Event1();
+  Event1<Map<String, dynamic>> onCommandResponse  = Event1();
+
   Event1<List<int>> onBinary  = Event1();
   
   Future<bool> connect(Uri host) async {
@@ -85,7 +88,11 @@ class HsWebsocket {
   Future<void> _onPacketReceived(DataPacket packet) async {
     onPacket.call(packet);
     if(packet.type == PacketType.command) {
-
+      if(packet.direction == PacketDirection.request) {
+        onCommandRequest.call(packet.payLoad);
+      } else if(packet.direction == PacketDirection.response) {
+        onCommandResponse.call(packet.payLoad);
+      }
     }
   }
 
@@ -107,7 +114,5 @@ class HsWebsocket {
   Future<void> sendPacket(DataPacket packet) async {
     _socket?.sink.add(jsonEncode(packet.rawData));
   }
-
-
-
+  
 }
