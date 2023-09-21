@@ -100,13 +100,19 @@ class HsWebsocket {
     _onBinaryReceived(data);
   }
 
-  Future<void> sendCommand(Map<String, dynamic> payload) async {
-    var packet = DataPacket(PacketType.command, PacketDirection.request, payload);
+  Future<void> sendCommand(String command, Map<String, dynamic> payload) async {
+    var packet = DataPacket(PacketType.command, PacketDirection.request, {
+      "commandType" : command,
+      "command" : payload
+    }); 
     sendPacket(packet);
   }
 
-  Future<void> sendCommandTo(String to,  Map<String, dynamic> payload) async {
-    var packet = DataPacket(PacketType.command, PacketDirection.request, payload);
+  Future<void> sendCommandTo(String to, String command,  Map<String, dynamic> payload) async {
+    var packet = DataPacket(PacketType.command, PacketDirection.request, {
+      "commandType" : command,
+      "command" : payload
+    });
     packet.update(from: serverId, to: to);
     sendPacket(packet);
   }

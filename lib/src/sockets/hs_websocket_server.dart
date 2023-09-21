@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:hs_socket/src/events/event1.dart';
 import 'package:hs_socket/src/events/event2.dart';
 import 'package:hs_socket/src/sockets/data_packet.dart';
@@ -45,6 +44,7 @@ class HsWebsocketServer {
       print(JsonEncoder.withIndent('  ').convert(packet.payLoad));
       print('------------------------------------------------------');
       if(packet.to.isNotEmpty) {
+        print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
         var clientTo = _getClientById(packet.to);
         if(clientTo != null) {
           var newPacket = DataPacket.create(packet.rawData);
