@@ -15,14 +15,15 @@ class HsWebsocketServer {
   Event1<HsWebsocket> onClientConnected           = Event1();
 
   Future<void> accept(WebSocketChannel channel) async {
-    var newClient = await HsWebsocket().accept(channel, newClientId);
-    print('Novo Cliente: ${newClientId}');
+    String newId = newClientId;
+    var newClient = await HsWebsocket().accept(channel, newId);
+    print('Novo Cliente: ${newId}');
     _addClient(newClient);
   }
 
   void _addClient(HsWebsocket client) {
     _clients.addAll({client.serverId : client});
-    print('Cliente ${client.serverId} adiiconado a lista de clientes');
+    print('Cliente ${client.serverId} adicionado a lista de clientes');
     _attachClientEvents(client.serverId, client);
   }
 
@@ -44,14 +45,18 @@ class HsWebsocketServer {
       print(JsonEncoder.withIndent('  ').convert(packet.payLoad));
       print('------------------------------------------------------');
       if(packet.to.isNotEmpty) {
-        print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
         var clientTo = _getClientById(packet.to);
         if(clientTo != null) {
+          print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
           var newPacket = DataPacket.create(packet.rawData);
           newPacket.update(from: client.serverId, to: clientTo.serverId);
           clientTo.sendPacket(packet);
+        } else {
+          print('@@@@@@@@@@@@@@@@@@@ CLIENT TO NÃO ENCONTRADO -> ${packet.to}');
         }
         
+      } else {
+        print('@@@@@@@@@@@@@@@@@@@ PACKET.TO VAZIO -> ${packet.to}');
       }
     };
   }
