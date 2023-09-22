@@ -54,10 +54,10 @@ class HsWebsocketServer {
       print('client.onPacket: ${packet.type.name}');
       if(packet.type == PacketType.command) {
         String command = packet.payLoad['commandType'] ?? 'none';
-        if(packet.from.isNotEmpty && packet.to.isNotEmpty && packet.from != packet.to) {
+        if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
           _bridgePacket(client, packet);
-        } else if(command == 'setUserName'&& packet.payLoad.containsKey('userName')) {
-          String? userName = packet.payLoad['userName'];
+        } else if(command == 'setUserName'&& packet.payLoad['command'].containsKey('userName')) {
+          String? userName = packet.payLoad['command']['userName'];
           client.update(userName: userName);
           _sendUsersOnline();
         }
