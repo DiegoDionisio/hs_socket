@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:hs_socket/hs_socket.dart';
 import 'package:hs_socket/src/events/event1.dart';
 import 'package:hs_socket/src/events/event2.dart';
 import 'package:hs_socket/src/sockets/data_packet.dart';
@@ -33,7 +34,7 @@ class HsWebsocketServer {
   Future<void> _sendUsersOnline() async {
      List<Map<String, dynamic>> _users = [];
     _clients.forEach((key, value) {
-      _users.add({key : value});
+      _users.add({key : value.userName});
     });
     if(_users.isNotEmpty) {
       for(var user in _clients.entries) {
@@ -52,30 +53,46 @@ class HsWebsocketServer {
     };
 
     client.onPacket += (DataPacket packet) {
-      onClientPacket.call(client, packet);
-      print('------------------------------------------------------');
+      if(packet.type == PacketType.command) {
+        String command = packet.payLoad['commandType'] ?? 'none';
+        if(packet.from.isNotEmpty && packet.to.isNotEmpty && packet.from != packet.to) {
+          _bridgePacket(client, packet);
+        } else if(command == 'setUserName'&& packet.payLoad.containsKey('userName')) {
+          String? userName = packet.payLoad['userName'];
+          client.update(userName: userName);
+          _sendUsersOnline();
+        }
+      }
+      onClientPacket.call(client, packet);    
+      
+    };
+  }
+
+  Future<void> _bridgePacket(HsWebsocket clientFrom, DataPacket packet) async {
+    if(packet.to.isNotEmpty) {
       if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
-        print('Cliente ${client.serverId}: Recebeu um pacote do cliente: ${packet.from}');
+        print('Cliente ${clientFrom.serverId}: Recebeu um pacote do cliente: ${packet.from}');
       } else {
-        print('Cliente ${client.serverId}: Recebeu um pacote: ');
+        print('Cliente ${clientFrom.serverId}: Recebeu um pacote: ');
       }
       print(JsonEncoder.withIndent('  ').convert(packet.payLoad));
       print('------------------------------------------------------');
-      if(packet.to.isNotEmpty) {
-        var clientTo = _getClientById(packet.to);
-        if(clientTo != null) {
-          print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
-          var newPacket = DataPacket.create(packet.rawData);
-          newPacket.update(from: client.serverId, to: clientTo.serverId);
-          clientTo.sendPacket(packet);
-        } else {
-          print('@@@@@@@@@@@@@@@@@@@ CLIENT TO NÃO ENCONTRADO -> ${packet.to}');
-        }
+      var clientTo = _getClientById(packet.to);
+      if(clientTo != null) {
+        print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
+        var newPacket = DataPacket.create(packet.rawData);
+        newPacket.update(from: clientFrom.serverId, to: clientTo.serverId);
+        clientTo.sendPacket(packet);
         
       } else {
-        print('@@@@@@@@@@@@@@@@@@@ PACKET.TO VAZIO -> ${packet.to}');
+        print('@@@@@@@@@@@@@@@@@@@ CLIENT TO NÃO ENCONTRADO -> ${packet.to}');
       }
-    };
+      
+    } else {
+      print('@@@@@@@@@@@@@@@@@@@ PACKET.TO VAZIO -> ${packet.to}');
+    } 
+    print('------------------------------------------------------');
+   
   }
 
   void _removeClient(String clientId) async {   

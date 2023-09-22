@@ -14,6 +14,9 @@ class HsWebsocket {
   String _authId = '';
   String get authId => _authId;
 
+  String _userName = '';
+  String get userName => _userName;
+
   bool _isServer = false;
   bool get isServer => _isServer;
 
@@ -119,6 +122,11 @@ class HsWebsocket {
 
   Future<void> sendPacket(DataPacket packet) async {
     _socket?.sink.add(jsonEncode(packet.rawData));
+  }
+
+  void update({String? userName, String? authId}) {
+    _userName = userName ?? _userName;
+    _authId = authId ?? _authId;
   }
   
 }
