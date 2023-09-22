@@ -51,6 +51,7 @@ class HsWebsocketServer {
     };
 
     client.onPacket += (DataPacket packet) {
+      print('client.onPacket: ${packet.type.name}');
       if(packet.type == PacketType.command) {
         String command = packet.payLoad['commandType'] ?? 'none';
         if(packet.from.isNotEmpty && packet.to.isNotEmpty && packet.from != packet.to) {
