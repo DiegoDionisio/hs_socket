@@ -26,7 +26,23 @@ class HsWebsocketServer {
     _clients.addAll({client.serverId : client});
     print('Cliente ${client.serverId} adicionado a lista de clientes');
     _attachClientEvents(client.serverId, client);
+    client.sendCommand('initialInfo', {"clientId" : client.serverId});
+    _sendUsersOnline();
   }
+
+  Future<void> _sendUsersOnline() async {
+     List<Map<String, dynamic>> _users = [];
+    _clients.forEach((key, value) {
+      _users.add({key : value});
+    });
+    if(_users.isNotEmpty) {
+      for(var user in _clients.entries) {
+        if(user.value.isConnected) {
+          user.value.sendCommand('listUsersOnline', {"usersList" : _users});
+        }
+      }
+    }    
+  } 
 
   void _attachClientEvents(String clientId, HsWebsocket client) {
     client.onDisconnect +=() {
@@ -65,6 +81,7 @@ class HsWebsocketServer {
   void _removeClient(String clientId) async {   
     print('Cliente $clientId removido da lista de clientes');
     _clients.removeWhere((key, value) => key == clientId);
+    _sendUsersOnline();
   }
   
   HsWebsocket? _getClient(HsWebsocket client) {
