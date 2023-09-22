@@ -4,8 +4,8 @@ import 'package:hs_socket/src/sockets/enum_packet_type.dart';
 class DataPacket {
   String get from => _data['header']['from'] ?? '';
   String get to => _data['header']['to'] ?? '';
-  PacketType get type => PacketType.none.fromName(_data['packetType'] ?? 'none');
-  PacketDirection get direction => PacketDirection.none.fromName(_data['packetDirection']);
+  PacketType get type => PacketType.none.fromName(_data['header']['packetType'] ?? 'none');
+  PacketDirection get direction => PacketDirection.none.fromName(_data['header']['packetDirection'] ?? 'none');
   Map<String, dynamic> get rawData => _data;
 
   Map<String, dynamic> _data = 
