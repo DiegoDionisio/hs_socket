@@ -34,6 +34,7 @@ class HsWebsocket {
   Event onDisconnect  = Event();
 
   Event1<DataPacket> onPacket = Event1();
+  Event onReady = Event();
   Event1<Map<String, dynamic>> onCommandRequest   = Event1();
   Event1<Map<String, dynamic>> onCommandResponse  = Event1();
 
@@ -124,7 +125,8 @@ class HsWebsocket {
     _socket?.sink.add(jsonEncode(packet.rawData));
   }
 
-  void update({String? userName, String? authId}) {
+  void update({String? userName, String? clientId, String? authId}) {
+    _serverId = clientId ?? _serverId;
     _userName = userName ?? _userName;
     _authId = authId ?? _authId;
   }

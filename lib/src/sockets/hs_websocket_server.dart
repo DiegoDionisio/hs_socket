@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:hs_socket/hs_socket.dart';
 import 'package:hs_socket/src/events/event1.dart';
 import 'package:hs_socket/src/events/event2.dart';
-import 'package:hs_socket/src/sockets/data_packet.dart';
-import 'package:hs_socket/src/sockets/hs_websocket.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
