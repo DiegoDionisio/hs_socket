@@ -25,6 +25,7 @@ class HsWebsocketServer {
     _clients.addAll({client.serverId : client});
     print('Cliente ${client.serverId} adicionado a lista de clientes');
     _attachClientEvents(client.serverId, client);
+    print('Total CLientes: ${clients.length}');
     client.sendCommand('initialInfo', {"clientId" : client.serverId});
     _sendUsersOnline();
   }
@@ -37,6 +38,7 @@ class HsWebsocketServer {
     if(_users.isNotEmpty) {
       for(var user in _clients.entries) {
         if(user.value.isConnected) {
+          print('Enviando UsersOnline para ${user.value.serverId}');
           user.value.sendCommand('listUsersOnline', {"usersList" : _users});
         }
       }
@@ -51,7 +53,7 @@ class HsWebsocketServer {
     };
 
     client.onPacket += (DataPacket packet) {
-      print('client.onPacket: ${packet.type.name}');
+      print('client.onPacket: ${packet.type.name} -> ${packet.payLoad}');
       if(packet.type == PacketType.command) {
         String command = packet.payLoad['commandType'] ?? 'none';
         if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
@@ -97,6 +99,7 @@ class HsWebsocketServer {
   void _removeClient(String clientId) async {   
     print('Cliente $clientId removido da lista de clientes');
     _clients.removeWhere((key, value) => key == clientId);
+    print('Total CLientes: ${clients.length}');
     _sendUsersOnline();
   }
   
