@@ -58,10 +58,16 @@ class HsWebsocketServer {
         if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
           _bridgePacket(client, packet);
         } else if(command == 'setUserName'&& packet.payLoad['command'].containsKey('userName')) {
-          String? userName = packet.payLoad['command']['userName'];
+          String? userName = packet.payLoad['command']['userName'] ?? '';
           print('Client Name: $userName (${client.serverId})');
-          client.update(userName: userName);
-          _sendUsersOnline();
+          if(userName!.startsWith('user_')) {
+            client.sendCommand('userKick', {
+              'message' : 'Você precisa estar logado para usar a ferramenta de suporte.'
+            });
+          } else {
+            client.update(userName: userName);
+            _sendUsersOnline();
+          }
         }
       }
       onClientPacket.call(client, packet);    
@@ -87,7 +93,6 @@ class HsWebsocketServer {
   }
 
   void _removeClient(String clientId) async {   
-    print('Cliente $clientId removido da lista de clientes');
     _clients.removeWhere((key, value) => key == clientId);
     print('Total de Clientes: ${clients.length}');
     _sendUsersOnline();
