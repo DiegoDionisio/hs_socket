@@ -23,11 +23,10 @@ class HsWebsocketServer {
 
   void _addClient(HsWebsocket client) {
     _clients.addAll({client.serverId : client});
-    print('Cliente ${client.serverId} adicionado a lista de clientes');
+    // print('Cliente ${client.serverId} adicionado a lista de clientes');
     _attachClientEvents(client.serverId, client);
-    print('Total CLientes: ${clients.length}');
+    print('Total de Clientes: ${clients.length}');
     client.sendCommand('initialInfo', {"clientId" : client.serverId});
-    _sendUsersOnline();
   }
 
   Future<void> _sendUsersOnline() async {
@@ -53,13 +52,14 @@ class HsWebsocketServer {
     };
 
     client.onPacket += (DataPacket packet) {
-      print('client.onPacket: ${packet.type.name} -> ${packet.payLoad}');
       if(packet.type == PacketType.command) {
         String command = packet.payLoad['commandType'] ?? 'none';
+        print('Client Command: ${packet.payLoad}');
         if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
           _bridgePacket(client, packet);
         } else if(command == 'setUserName'&& packet.payLoad['command'].containsKey('userName')) {
           String? userName = packet.payLoad['command']['userName'];
+          print('Client Name: $userName (${client.serverId})');
           client.update(userName: userName);
           _sendUsersOnline();
         }
@@ -70,36 +70,26 @@ class HsWebsocketServer {
   }
 
   Future<void> _bridgePacket(HsWebsocket clientFrom, DataPacket packet) async {
-    if(packet.to.isNotEmpty) {
-      if(packet.from.isNotEmpty && packet.to.isNotEmpty) {
-        print('Cliente ${clientFrom.serverId}: Recebeu um pacote do cliente: ${packet.from}');
-      } else {
-        print('Cliente ${clientFrom.serverId}: Recebeu um pacote: ');
-      }
-      print(JsonEncoder.withIndent('  ').convert(packet.payLoad));
-      print('------------------------------------------------------');
+    if(packet.to.isNotEmpty) {     
       var clientTo = _getClientById(packet.to);
       if(clientTo != null) {
-        print('Repassando um pacote do cliente: ${packet.from} para o cliente: ${packet.to}');
         var newPacket = DataPacket.create(packet.rawData);
         newPacket.update(from: clientFrom.serverId, to: clientTo.serverId);
         clientTo.sendPacket(packet);
         
       } else {
         print('@@@@@@@@@@@@@@@@@@@ CLIENT TO NÃO ENCONTRADO -> ${packet.to}');
-      }
-      
+      }      
     } else {
       print('@@@@@@@@@@@@@@@@@@@ PACKET.TO VAZIO -> ${packet.to}');
     } 
-    print('------------------------------------------------------');
-   
+    print('------------------------------------------------------');   
   }
 
   void _removeClient(String clientId) async {   
     print('Cliente $clientId removido da lista de clientes');
     _clients.removeWhere((key, value) => key == clientId);
-    print('Total CLientes: ${clients.length}');
+    print('Total de Clientes: ${clients.length}');
     _sendUsersOnline();
   }
   
